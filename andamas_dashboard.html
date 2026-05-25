@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANDAMAS — Dashboard Financiero</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2127;
+    --border: #2a2d35;
+    --border2: #363a45;
+    --text: #f0f1f3;
+    --muted: #7a7f8e;
+    --faint: #3a3f4d;
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --green: #2dd4a0;
+    --red: #f05f5f;
+    --amber: #f5a623;
+    --green-bg: rgba(45,212,160,0.08);
+    --red-bg: rgba(240,95,95,0.08);
+    --amber-bg: rgba(245,166,35,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -2rem;
+  }
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .login-logo {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #4f8ef7, #7c5cfc);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 0.04em;
+    margin: 0 auto 1rem;
+  }
+  .login-box h2 { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .login-box .sub { font-size: 12px; color: var(--muted); margin-bottom: 2rem; }
+  .user-tabs {
+    display: flex; gap: 8px; margin-bottom: 1.5rem;
+  }
+  .user-tab {
+    flex: 1; padding: 10px 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .user-tab:hover { border-color: var(--accent); }
+  .user-tab.active {
+    border-color: var(--accent);
+    background: rgba(79,142,247,0.08);
+  }
+  .user-tab .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    margin: 0 auto 6px;
+  }
+  .avatar-k { background: rgba(124,92,252,0.18); color: #a78bfa; }
+  .avatar-a { background: rgba(79,142,247,0.18); color: #4f8ef7; }
+  .user-tab .uname { font-size: 12px; font-weight: 600; color: var(--text); }
+  .user-tab .urole { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  .pin-label { font-size: 11px; color: var(--muted); margin-bottom: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .pin-dots {
+    display: flex; justify-content: center; gap: 12px; margin-bottom: 1.5rem;
+  }
+  .pin-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+  .pin-dot.error { background: var(--red); border-color: var(--red); }
+
+  .numpad {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .num-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 18px; font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .num-btn:hover { background: var(--border2); border-color: var(--accent); }
+  .num-btn:active { transform: scale(0.95); }
+  .num-btn.del { font-size: 14px; color: var(--muted); }
+  .num-btn.zero { grid-column: 2; }
+
+  .login-error {
+    font-size: 12px; color: var(--red);
+    min-height: 18px; margin-top: 4px;
+    transition: opacity 0.2s;
+  }
+
+  /* ── DASHBOARD ── */
+  #dashboard { display: none; }
+
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2.5rem; padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #4f8ef7, #7c5cfc);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.04em;
+  }
+  .brand-text h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; }
+  .brand-text p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .year-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+  }
+  .user-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px 5px 6px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .user-pill:hover { border-color: var(--red); }
+  .user-pill .mini-avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .user-pill span { font-size: 12px; color: var(--muted); }
+
+  .section-title {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+  .input-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 0 12px; height: 40px;
+    transition: border-color 0.2s;
+  }
+  .input-wrap:focus-within { border-color: var(--accent); }
+  .input-wrap .sym { font-size: 13px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .input-wrap input {
+    background: transparent; border: none; outline: none;
+    font-size: 14px; color: var(--text);
+    font-family: 'DM Mono', monospace; width: 100%;
+  }
+  input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
+
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 1rem; }
+  .metric {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem;
+    position: relative; overflow: hidden;
+  }
+  .metric::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2)); opacity: 0.6;
+  }
+  .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .metric-value { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--text); }
+  .metric-sub { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 600px) { .results-grid { grid-template-columns: 1fr; } }
+
+  .result-table { width: 100%; border-collapse: collapse; }
+  .result-table tr td { padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .result-table tr:last-child td { border-bottom: none; }
+  .result-table .label { color: var(--muted); }
+  .result-table .val { text-align: right; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); }
+  .result-table .total-row td { padding-top: 12px; font-weight: 600; border-top: 1px solid var(--border2); font-size: 14px; }
+  .result-table .sub { color: var(--muted); padding-left: 16px; font-size: 12px; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  .bar-section { margin-top: 14px; }
+  .bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+  .bar-track { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+  .veh-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .veh-item { background: var(--surface2); border-radius: 10px; padding: 12px; text-align: center; }
+  .veh-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .veh-value { font-size: 17px; font-weight: 700; font-family: 'DM Mono', monospace; }
+
+  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .footer p { font-size: 11px; color: var(--faint); }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">AND</div>
+    <h2>ANDAMAS</h2>
+    <p class="sub">Selecciona tu usuario e ingresa tu PIN</p>
+
+    <div class="user-tabs">
+      <div class="user-tab active" id="tab-k" onclick="selectUser('k')">
+        <div class="avatar avatar-k">KR</div>
+        <div class="uname">Kimberly</div>
+        <div class="urole">Romero</div>
+      </div>
+      <div class="user-tab" id="tab-a" onclick="selectUser('a')">
+        <div class="avatar avatar-a">AM</div>
+        <div class="uname">Andrés</div>
+        <div class="urole">Machuca</div>
+      </div>
+    </div>
+
+    <div class="pin-label">Ingresa tu PIN de 4 dígitos</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+
+    <div class="numpad">
+      <button class="num-btn" onclick="pressNum('1')">1</button>
+      <button class="num-btn" onclick="pressNum('2')">2</button>
+      <button class="num-btn" onclick="pressNum('3')">3</button>
+      <button class="num-btn" onclick="pressNum('4')">4</button>
+      <button class="num-btn" onclick="pressNum('5')">5</button>
+      <button class="num-btn" onclick="pressNum('6')">6</button>
+      <button class="num-btn" onclick="pressNum('7')">7</button>
+      <button class="num-btn" onclick="pressNum('8')">8</button>
+      <button class="num-btn" onclick="pressNum('9')">9</button>
+      <button class="num-btn del" onclick="pressNum('0')" style="grid-column:2">0</button>
+      <button class="num-btn del" onclick="deleteLast()">⌫</button>
+    </div>
+
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="dashboard">
+<div class="page">
+
+  <div class="header">
+    <div class="brand">
+      <div class="logo">AND</div>
+      <div class="brand-text">
+        <h1>ANDAMAS</h1>
+        <p>Dashboard financiero · Arriendo de vehículos</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="year-badge" id="fecha-badge">2025</div>
+      <div class="user-pill" onclick="logout()" title="Cerrar sesión">
+        <div class="mini-avatar" id="session-avatar" style="background:rgba(124,92,252,0.18);color:#a78bfa"></div>
+        <span id="session-name">Kimberly</span>
+        <span style="font-size:10px; color:var(--faint)">· salir</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-title">Ingresos y vehículos</p>
+    <div class="input-grid">
+      <div class="field">
+        <label>Ingresos anuales que facturas</label>
+        <div class="input-wrap"><span class="sym">$</span><input type="number" id="ingresos" value="10000" min="0" step="100"></div>
+      </div>
+      <div class="field">
+        <label>Número de vehículos</label>
+        <div class="input-wrap"><span class="sym">#</span><input type="number" id="vehiculos" value="2" min="1" step="1"></div>
+      </div>
+      <div class="field">
+        <label>Arriendo anual que te facturan (total autos)</label>
+        <div class="input-wrap"><span class="sym">$</span><input type="number" id="arriendo" value="0" min="0" step="100"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-title">Gastos fijos mensuales</p>
+    <div class="input-grid">
+      <div class="field">
+        <label>Contadora (sin IVA) — se suma IVA 12%</label>
+        <div class="input-wrap"><span class="sym">$</span><input type="number" id="contadora" value="100" min="0" step="1"></div>
+      </div>
+      <div class="field">
+        <label>Sistema contable (pago anual)</label>
+        <div class="input-wrap"><span class="sym">$</span><input type="number" id="sistema" value="344.99" min="0" step="1"></div>
+      </div>
+      <div class="field">
+        <label>Asistente (incl. IVA)</label>
+        <div class="input-wrap"><span class="sym">$</span><input type="number" id="asistente" value="400" min="0" step="1"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics" id="metrics"></div>
+
+  <div class="results-grid">
+    <div class="card">
+      <p class="section-title">Estado de resultados anual</p>
+      <table class="result-table" id="tabla-anual"></table>
+      <div class="bar-section" id="bar-section"></div>
+    </div>
+    <div class="card">
+      <p class="section-title">Mensual</p>
+      <table class="result-table" id="tabla-mensual"></table>
+      <div style="margin-top:1.25rem">
+        <p class="section-title">Por vehículo / mes</p>
+        <div class="veh-grid" id="por-vehiculo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>ANDAMAS · Proyección financiera</p>
+    <p id="footer-fecha"></p>
+  </div>
+</div>
+</div>
+
+<script>
+  const USERS = {
+    k: { name: 'Kimberly', full: 'Kimberly Romero', pin: '2847', avatarBg: 'rgba(124,92,252,0.18)', avatarColor: '#a78bfa', initials: 'KR' },
+    a: { name: 'Andrés',   full: 'Andrés Machuca',  pin: '5193', avatarBg: 'rgba(79,142,247,0.18)',  avatarColor: '#4f8ef7', initials: 'AM' }
+  };
+
+  let selectedUser = 'k';
+  let pinBuffer = '';
+
+  function selectUser(u) {
+    selectedUser = u;
+    pinBuffer = '';
+    updateDots();
+    document.getElementById('login-error').textContent = '';
+    document.querySelectorAll('.user-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + u).classList.add('active');
+  }
+
+  function updateDots(state) {
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('d' + i);
+      dot.className = 'pin-dot';
+      if (state === 'error') dot.classList.add('error');
+      else if (i < pinBuffer.length) dot.classList.add('filled');
+    }
+  }
+
+  function pressNum(n) {
+    if (pinBuffer.length >= 4) return;
+    pinBuffer += n;
+    updateDots();
+    if (pinBuffer.length === 4) validatePin();
+  }
+
+  function deleteLast() {
+    pinBuffer = pinBuffer.slice(0, -1);
+    updateDots();
+    document.getElementById('login-error').textContent = '';
+  }
+
+  function validatePin() {
+    const user = USERS[selectedUser];
+    if (pinBuffer === user.pin) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      const av = document.getElementById('session-avatar');
+      av.textContent = user.initials;
+      av.style.background = user.avatarBg;
+      av.style.color = user.avatarColor;
+      document.getElementById('session-name').textContent = user.name;
+      calc();
+    } else {
+      updateDots('error');
+      document.getElementById('login-error').textContent = 'PIN incorrecto. Intenta de nuevo.';
+      setTimeout(() => { pinBuffer = ''; updateDots(); }, 900);
+    }
+  }
+
+  function logout() {
+    pinBuffer = '';
+    updateDots();
+    document.getElementById('login-error').textContent = '';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  const d = new Date();
+  document.getElementById('fecha-badge').textContent = d.getFullYear();
+  document.getElementById('footer-fecha').textContent = d.toLocaleDateString('es-EC', { year:'numeric', month:'long', day:'numeric' });
+
+  function fmt(n) {
+    const abs = Math.abs(n);
+    const str = abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (n < 0 ? '-' : '') + '$' + str;
+  }
+  function pct(part, total) {
+    if (!total) return '0%';
+    return Math.round((part / total) * 100) + '%';
+  }
+
+  function calc() {
+    const ingresos      = parseFloat(document.getElementById('ingresos').value)  || 0;
+    const vehiculos     = parseInt(document.getElementById('vehiculos').value)    || 1;
+    const arriendoAnual = parseFloat(document.getElementById('arriendo').value)  || 0;
+    const contadoraSIva = parseFloat(document.getElementById('contadora').value) || 0;
+    const sistemaAnual  = parseFloat(document.getElementById('sistema').value)   || 0;
+    const asistente     = parseFloat(document.getElementById('asistente').value) || 0;
+
+    const contadoraMes = contadoraSIva * 1.12;
+    const sistemaMes   = sistemaAnual / 12;
+    const gastosFijosM = contadoraMes + sistemaMes + asistente;
+    const gastosFijosA = gastosFijosM * 12;
+    const arriendoMes  = arriendoAnual / 12;
+    const totalGastosA = gastosFijosA + arriendoAnual;
+    const totalGastosM = gastosFijosM + arriendoMes;
+    const utilidadA    = ingresos - totalGastosA;
+    const utilidadM    = utilidadA / 12;
+    const margenPct    = ingresos > 0 ? Math.round((utilidadA / ingresos) * 100) : 0;
+    const ingMes       = ingresos / 12;
+    const ingPorVehM   = ingMes / vehiculos;
+    const arrPorVehM   = arriendoMes / vehiculos;
+    const margenVehM   = ingPorVehM - arrPorVehM;
+
+    const isPos      = utilidadA >= 0;
+    const isZero     = utilidadA === 0;
+    const badgeClass = isPos ? (isZero ? 'badge-amber' : 'badge-green') : 'badge-red';
+    const badgeText  = isPos ? (isZero ? 'Equilibrio' : 'Rentable') : 'Déficit';
+    const utilColor  = isPos ? 'var(--green)' : 'var(--red)';
+    const barW       = Math.min(100, Math.max(0, ingresos > 0 ? Math.round((totalGastosA / ingresos) * 100) : 100));
+    const barColor   = barW >= 100 ? 'var(--red)' : barW >= 80 ? 'var(--amber)' : 'var(--green)';
+
+    document.getElementById('metrics').innerHTML = `
+      <div class="metric"><div class="metric-label">Ingresos / mes</div><div class="metric-value">${fmt(ingMes)}</div><div class="metric-sub">${fmt(ingresos)} / año</div></div>
+      <div class="metric"><div class="metric-label">Gastos totales / mes</div><div class="metric-value">${fmt(totalGastosM)}</div><div class="metric-sub">${fmt(totalGastosA)} / año</div></div>
+      <div class="metric"><div class="metric-label">Utilidad / mes</div><div class="metric-value" style="color:${utilColor}">${fmt(utilidadM)}</div><div class="metric-sub" style="color:${utilColor}">${fmt(utilidadA)} / año</div></div>
+      <div class="metric"><div class="metric-label">Margen neto</div><div class="metric-value" style="color:${utilColor}">${margenPct}%</div><div class="metric-sub"><span class="badge ${badgeClass}"><span class="badge-dot"></span>${badgeText}</span></div></div>
+    `;
+
+    document.getElementById('tabla-anual').innerHTML = `
+      <tr><td class="label">Ingresos totales</td><td class="val">${fmt(ingresos)}</td></tr>
+      <tr><td class="label sub">Contadora (c/ IVA)</td><td class="val" style="color:var(--red)">- ${fmt(contadoraMes*12)}</td></tr>
+      <tr><td class="label sub">Sistema contable</td><td class="val" style="color:var(--red)">- ${fmt(sistemaAnual)}</td></tr>
+      <tr><td class="label sub">Asistente</td><td class="val" style="color:var(--red)">- ${fmt(asistente*12)}</td></tr>
+      ${arriendoAnual > 0 ? `<tr><td class="label sub">Arriendo (${vehiculos} auto${vehiculos>1?'s':''})</td><td class="val" style="color:var(--red)">- ${fmt(arriendoAnual)}</td></tr>` : ''}
+      <tr class="total-row"><td>Utilidad neta</td><td class="val" style="color:${utilColor};text-align:right">${fmt(utilidadA)}</td></tr>
+    `;
+
+    document.getElementById('bar-section').innerHTML = `
+      <div class="bar-labels"><span>Gastos: ${pct(totalGastosA, ingresos)}</span><span>Utilidad: ${pct(Math.max(0,utilidadA), ingresos)}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${barW}%;background:${barColor}"></div></div>
+    `;
+
+    document.getElementById('tabla-mensual').innerHTML = `
+      <tr><td class="label">Ingresos / mes</td><td class="val">${fmt(ingMes)}</td></tr>
+      <tr><td class="label sub">Gastos fijos</td><td class="val" style="color:var(--red)">- ${fmt(gastosFijosM)}</td></tr>
+      ${arriendoMes > 0 ? `<tr><td class="label sub">Arriendo autos</td><td class="val" style="color:var(--red)">- ${fmt(arriendoMes)}</td></tr>` : ''}
+      <tr class="total-row"><td>Utilidad / mes</td><td class="val" style="color:${utilColor};text-align:right">${fmt(utilidadM)}</td></tr>
+    `;
+
+    const mc = margenVehM >= 0 ? 'var(--green)' : 'var(--red)';
+    document.getElementById('por-vehiculo').innerHTML = `
+      <div class="veh-item"><div class="veh-label">Cobras al cliente</div><div class="veh-value" style="color:var(--accent)">${fmt(ingPorVehM)}</div></div>
+      <div class="veh-item"><div class="veh-label">Pagas al dueño</div><div class="veh-value" style="color:var(--red)">${arriendoAnual>0?fmt(arrPorVehM):'—'}</div></div>
+      <div class="veh-item"><div class="veh-label">Margen bruto</div><div class="veh-value" style="color:${arriendoAnual>0?mc:'var(--muted)'}">${arriendoAnual>0?fmt(margenVehM):'—'}</div></div>
+    `;
+  }
+
+  document.querySelectorAll('input').forEach(el => el.addEventListener('input', calc));
+</script>
+</body>
+</html>
